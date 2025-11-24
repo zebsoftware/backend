@@ -4,17 +4,18 @@ import path from "path";
 import fs from "fs";
 import {
   getProducts,
+  getProductById,
   addProduct,
   updateProduct,
   deleteProduct,
 } from "../controllers/productController.js";
 
+import { verifyToken } from "../middleware/auth.js";
+
 const router = express.Router();
 
 // Ensure uploads folder exists
 const uploadsDir = path.join(process.cwd(), "uploads");
-console.log("Uploads hits");
-
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
 // Multer config
@@ -27,10 +28,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Routes
-router.get("/", getProducts);
-router.post("/", upload.single("image"), addProduct);
-router.put("/:id", upload.single("image"), updateProduct);
-router.delete("/:id", deleteProduct);
+// ---------------------
+// Public Routes (No JWT)
+// ---------------------
+router.get("/", getProducts);       // List all products
+router.get("/:id", getProductById); // Get single product by ID
+
+// ---------------------
+// Admin Routes (JWT required)
+// ---------------------
+router.post("/", verifyToken, upload.single("image"), addProduct);
+router.put("/:id", verifyToken, upload.single("image"), updateProduct);
+router.delete("/:id", verifyToken, deleteProduct);
 
 export default router;
