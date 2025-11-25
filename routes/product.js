@@ -1,42 +1,22 @@
 import express from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
 import {
   getProducts,
   getProductById,
   addProduct,
   updateProduct,
-  deleteProduct,
+  deleteProduct
 } from "../controllers/productController.js";
 
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken } from "../middleware/auth.js"; 
+import upload from "../middleware/upload.js"; // Multer
 
 const router = express.Router();
 
-// Ensure uploads folder exists
-const uploadsDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+// Public routes
+router.get("/", getProducts);
+router.get("/:id", getProductById);
 
-// Multer config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `image-${uniqueSuffix}${path.extname(file.originalname)}`);
-  },
-});
-const upload = multer({ storage });
-
-// ---------------------
-// Public Routes (No JWT)
-// ---------------------
-router.get("/", getProducts);       // List all products
-router.get("/:id", getProductById); // Get single product by ID
-
-// ---------------------
-// Admin Routes (JWT required)
-// ---------------------
+// Protected routes
 router.post("/", verifyToken, upload.single("image"), addProduct);
 router.put("/:id", verifyToken, upload.single("image"), updateProduct);
 router.delete("/:id", verifyToken, deleteProduct);

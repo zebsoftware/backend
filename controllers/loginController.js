@@ -6,10 +6,10 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check user
+    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json( { message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     // Compare hashed password
@@ -18,10 +18,10 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Generate token
+    // Generate token using env secret
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      "SECRET_KEY",
+      process.env.JWT_SECRET,   // ✅ no hardcoded key
       { expiresIn: "1d" }
     );
 
