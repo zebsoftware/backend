@@ -14,7 +14,7 @@ import registerRoute from "./routes/register.js";
 import contactRoute from "./routes/contact.js";
 import productRoutes from "./routes/product.js";
 import paymentRoute from "./routes/payment.js";
-
+import profileRoute from "./routes/profile.js";
 const app = express();
 
 // Fix __dirname in ES Modules
@@ -41,6 +41,7 @@ app.use("/api/register", registerRoute);
 app.use("/api/contact", contactRoute);
 app.use("/api/products", productRoutes);
 app.use("/api/payment", paymentRoute); // ⭐ Stripe route added
+app.use("/api/profile", profileRoute);
 
 // Default Route
 app.get("/", (req, res) => {
