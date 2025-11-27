@@ -1,13 +1,13 @@
 // routes/payment.js
 import express from "express";
-import { createPaymentIntent, handleWebhook } from "../controllers/paymentController.js";
+import { createPaymentIntent, getPaymentHealth } from "../controllers/paymentController.js";
 
 const router = express.Router();
 
-// Regular JSON route for creating payment intents
-router.post("/create-payment-intent", createPaymentIntent);
+// Add this health check route
+router.get("/health", getPaymentHealth);
 
-// Webhook endpoint for Stripe events (requires raw body)
-router.post("/webhook", express.raw({ type: 'application/json' }), handleWebhook);
+// Create payment intent
+router.post("/create-payment-intent", createPaymentIntent);
 
 export default router;

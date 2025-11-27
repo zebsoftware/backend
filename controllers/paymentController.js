@@ -14,6 +14,43 @@ if (!stripeSecret) {
 
 const stripe = new Stripe(stripeSecret);
 
+// Health check function - ADD THIS
+export const getPaymentHealth = async (req, res) => {
+  try {
+    const health = {
+      stripeConfigured: !!stripe,
+      timestamp: new Date().toISOString(),
+      status: stripe ? "operational" : "misconfigured",
+      environment: process.env.NODE_ENV || 'development'
+    };
+
+    // Test Stripe connection if configured
+    if (stripe) {
+      try {
+        await stripe.balance.retrieve();
+        health.stripeConnection = "healthy";
+        health.message = "Payment system is operational";
+      } catch (error) {
+        health.stripeConnection = "failed";
+        health.stripeError = error.message;
+        health.message = "Stripe connection failed";
+      }
+    } else {
+      health.message = "Stripe not configured - check environment variables";
+    }
+
+    console.log("🔧 Payment Health Check:", health);
+    return res.status(200).json(health);
+  } catch (error) {
+    console.error("❌ Payment health check failed:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Payment health check failed",
+      error: error.message
+    });
+  }
+};
+
 export const createPaymentIntent = async (req, res) => {
   try {
     const { amount, currency = "usd" } = req.body;
@@ -42,7 +79,6 @@ export const createPaymentIntent = async (req, res) => {
       automatic_payment_methods: { 
         enabled: true 
       },
-      // Add metadata for better tracking
       metadata: {
         integration_check: 'accept_a_payment'
       }
@@ -78,7 +114,6 @@ export const createPaymentIntent = async (req, res) => {
       default:
         return res.status(500).json({
           message: "Internal server error during payment processing.",
-          // Include more details in development
           ...(process.env.NODE_ENV === 'development' && {
             error: err.message,
             type: err.type
@@ -109,7 +144,6 @@ export const handleWebhook = async (req, res) => {
     case 'payment_intent.succeeded':
       const paymentIntent = event.data.object;
       console.log(`💰 PaymentIntent for ${paymentIntent.amount} was successful!`);
-      // Update your database here
       break;
     case 'payment_intent.payment_failed':
       const failedPaymentIntent = event.data.object;
