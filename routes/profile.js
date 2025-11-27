@@ -1,27 +1,46 @@
 import express from "express";
+import User from "../models/User.js";
 import { protect } from "../middleware/auth.js";
-
 
 const router = express.Router();
 
-// GET PROFILE
+// GET user profile
 router.get("/", protect, async (req, res) => {
   res.json(req.user);
 });
 
-// UPDATE PROFILE
-router.put("/", protect, async (req, res) => {
+// UPDATE or CREATE profile
+router.post("/", protect, async (req, res) => {
   try {
-    const user = req.user;
+    const { name, phone, address, city, country, postalCode } = req.body;
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
+    const user = await User.findById(req.user._id);
 
-    await user.save();
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json({ message: "Profile updated", user });
-  } catch (err) {
-    res.status(500).json({ message: "Error updating profile" });
+    user.name = name || user.name;
+    user.phone = phone || "";
+    user.address = address || "";
+    user.city = city || "";
+    user.country = country || "";
+    user.postalCode = postalCode || "";
+
+    const updatedUser = await user.save();
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE user
+router.delete("/", protect, async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.user._id);
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
