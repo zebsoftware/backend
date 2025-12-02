@@ -4,7 +4,7 @@ import { createPaymentIntent, getPaymentHealth } from "../controllers/paymentCon
 
 const router = express.Router();
 
-// Add this health check route
+// Add this line - Health check route
 router.get("/health", getPaymentHealth);
 
 // Create payment intent

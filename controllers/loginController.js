@@ -21,7 +21,7 @@ export const loginUser = async (req, res) => {
     // Generate token using env secret
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      process.env.JWT_SECRET,   // ✅ no hardcoded key
+      process.env.JWT_SECRET,   
       { expiresIn: "1d" }
     );
 
