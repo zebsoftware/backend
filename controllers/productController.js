@@ -2,6 +2,14 @@ import Product from "../models/Product.js";
 import path from "path";
 import fs from "fs";
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+
+// --- HELPER FUNCTIONS ---
+const parseBoolean = (value) => value === "true" || value === true;
+const parseNumber = (value) => (value !== undefined && value !== null ? Number(value) : null);
+
 // --- GET ALL PRODUCTS ---
 export const getAllProducts = async (req, res) => {
   try {
@@ -19,18 +27,28 @@ export const getAllProducts = async (req, res) => {
 // --- ADD PRODUCT ---
 export const addProduct = async (req, res) => {
   try {
-    const { name, price, originalPrice, category, stock, description, inStock, isNewItem, isSale } = req.body;
+    const {
+      name,
+      price,
+      originalPrice,
+      category,
+      stock,
+      description,
+      inStock,
+      isNewItem,
+      isSale,
+    } = req.body;
 
     const product = new Product({
       name,
-      price: parseFloat(price),
-      originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+      price: parseNumber(price),
+      originalPrice: parseNumber(originalPrice),
       category,
-      stock: parseInt(stock),
+      stock: parseNumber(stock),
       description: description || "",
-      inStock: inStock === "true",
-      isNewItem: isNewItem === "true",
-      isSale: isSale === "true",
+      inStock: parseBoolean(inStock),
+      isNewItem: parseBoolean(isNewItem),
+      isSale: parseBoolean(isSale),
       image: req.file ? `/uploads/${req.file.filename}` : null,
     });
 
@@ -48,23 +66,32 @@ export const updateProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    const { name, price, originalPrice, category, stock, description, inStock, isNewItem, isSale } = req.body;
+    const {
+      name,
+      price,
+      originalPrice,
+      category,
+      stock,
+      description,
+      inStock,
+      isNewItem,
+      isSale,
+    } = req.body;
 
     product.name = name;
-    product.price = parseFloat(price);
-    product.originalPrice = originalPrice ? parseFloat(originalPrice) : null;
+    product.price = parseNumber(price);
+    product.originalPrice = parseNumber(originalPrice);
     product.category = category;
-    product.stock = parseInt(stock);
+    product.stock = parseNumber(stock);
     product.description = description || "";
-    product.inStock = inStock === "true";
-    product.isNewItem = isNewItem === "true";
-    product.isSale = isSale === "true";
+    product.inStock = parseBoolean(inStock);
+    product.isNewItem = parseBoolean(isNewItem);
+    product.isSale = parseBoolean(isSale);
 
     // Handle image replacement
     if (req.file) {
-      // Delete old image
       if (product.image) {
-        const oldImagePath = path.join(process.cwd(), product.image);
+        const oldImagePath = path.join(process.cwd(), product.image.replace(/^\//, ""));
         if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
       }
       product.image = `/uploads/${req.file.filename}`;
@@ -84,9 +111,9 @@ export const deleteProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    // Delete image
+    // Delete image if exists
     if (product.image) {
-      const imgPath = path.join(process.cwd(), product.image);
+      const imgPath = path.join(process.cwd(), product.image.replace(/^\//, ""));
       if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
     }
 
