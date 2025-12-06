@@ -1,17 +1,24 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import cors from "cors"; // ✅ Import cors
-import productRoutes from "./routes/product.js";
+import cors from "cors";
 import path from "path";
+
+// Import routes
+import productRoutes from "./routes/product.js";
+import profileRoutes from "./routes/profile.js";
+import contactRoutes from "./routes/contact.js";
+import loginRoutes from "./routes/login.js";
+import registerRoutes from "./routes/register.js";
+import paymentRoutes from "./routes/payment.js";
 
 dotenv.config();
 const app = express();
 
-// ✅ Enable CORS
+// Enable CORS
 app.use(cors({
-  origin: ["http://localhost:5173"], // frontend URL
-  credentials: true, // if you use cookies or auth headers
+  origin: ["http://localhost:5173"],
+  credentials: true,
 }));
 
 // Middleware
@@ -22,7 +29,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Routes
-app.use("/api/products", productRoutes); // corrected route path
+app.use("/api/products", productRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/login", loginRoutes);
+app.use("/api/register", registerRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // DB Connection
 mongoose.connect(process.env.MONGO_URL)
