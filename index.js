@@ -11,6 +11,7 @@ import contactRoutes from "./routes/contact.js";
 import loginRoutes from "./routes/login.js";
 import registerRoutes from "./routes/register.js";
 import paymentRoutes from "./routes/payment.js";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 const app = express();
@@ -25,8 +26,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+// Serve uploaded image
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/products", productRoutes);

@@ -1,11 +1,17 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
-// Ensure uploads folder exists
-const uploadsDir = path.join(process.cwd(), "uploads");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Correct uploads path
+const uploadsDir = path.join(__dirname, "../uploads");
+
+// Ensure folder exists
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
@@ -21,7 +27,7 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-  if (!file) return cb(null, true); // allow no file for edit
+  if (!file) return cb(null, true);
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
