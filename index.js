@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
-import { fileURLToPath } from "url";
 
 // Import routes
 import productRoutes from "./routes/product.js";
@@ -14,9 +13,14 @@ import registerRoutes from "./routes/register.js";
 import paymentRoutes from "./routes/payment.js";
 
 dotenv.config();
+
 const app = express();
 
-// Enable CORS (allow everything for testing)
+/* =========================
+   MIDDLEWARE
+========================= */
+
+// Enable CORS
 app.use(
   cors({
     origin: "*",
@@ -25,18 +29,24 @@ app.use(
   })
 );
 
-// Parse JSON and form data
+// Parse JSON & form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Resolve current directory (important for ES modules)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/* =========================
+   STATIC FILES (IMPORTANT)
+========================= */
 
-// Serve uploaded images folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// 🔥 Serve uploads folder correctly
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
 
-// API Routes
+/* =========================
+   ROUTES
+========================= */
+
 app.use("/api/products", productRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/contact", contactRoutes);
@@ -44,12 +54,21 @@ app.use("/api/login", loginRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api/payment", paymentRoutes);
 
-// Database Connection
+/* =========================
+   DATABASE
+========================= */
+
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("✅ Database connected successfully"))
   .catch((err) => console.error("❌ DB Connection error:", err));
 
-// Start Server
+/* =========================
+   SERVER
+========================= */
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
